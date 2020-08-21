@@ -27,11 +27,19 @@ create table wn.rel (
 	defid2 int
 );
 
-create table wn.code (
+create table wn.pos (
 	id serial,
-	type char(3),  /* pos, cat, ptr */
-	code varchar(2),
-	value varchar(50)
+	num int,
+	pos varchar(10),
+	name varchar(10),
+	cd char(1),
+	st varchar(10)
+);
+
+create table wn.ptr (
+);
+
+create table wn.cat (
 );
 
 # list synsets
