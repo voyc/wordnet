@@ -6,6 +6,8 @@ def composeDict(wordid, word):
 	return f"insert into wn.dict(id,word) values({wordid},'{word}');\n"
 def composeDef(wordid, defnum, senseid):
 	return f"insert into wn.def(wordid,defnum,senseid) values({wordid},{defnum},{senseid});\n"
+def composeRel(relptr,relofst,relpos,relnumnum):
+	return f"insert into wn.rel(relptr,relofst,relpos,relnumnum) values('{relptr}','{relofst}','{relpos}','{relnumnum}');\n"
 
 dirin = '../princeton/dict/'
 dirout = '../sql/gen/'
@@ -13,14 +15,18 @@ dirout = '../sql/gen/'
 fdict = open(f'{dirout}/loaddict.sql', 'w')
 fsense = open(f'{dirout}/loadsense.sql', 'w')
 fdef = open(f'{dirout}/loaddef.sql', 'w')
+frel = open(f'{dirout}/loadrel.sql', 'w')
 
 counter = 0
 runaway = 83000 
 wordid = 1
 senseid = 1
+defctr = 0
+relctr = 0
+totrel = 0
 
 def processFile(fname, pos):
-	global fdict,fsense,fdef,counter,runaway,wordid,senseid
+	global fdict,fsense,fdef,counter,runaway,wordid,senseid,defctr,relctr,totrel
 	infile = open(fname, 'r')
 	for line in infile:
 		counter += 1
@@ -39,6 +45,8 @@ def processFile(fname, pos):
 		sense = h[1].strip().replace("'","''");
 		a = line.split(' ')
 		ofst = a[0]
+		cat = a[1]
+		poscd = a[2]
 		numwords = int(a[3],16)
 		i = 1
 		j = 4
@@ -48,6 +56,22 @@ def processFile(fname, pos):
 			j += inc
 			aword.append(a[j])	
 			i += 1
+
+		# parse relationships
+		j += inc
+		numrel = int(a[j])
+		totrel += numrel
+		j += 1
+		i = 1
+		while i <= numrel:
+			relptr = a[j+0]
+			relofst = a[j+1]
+			relpos = a[j+2]
+			relnumnum = a[j+3]
+			frel.write(composeRel(relptr,relofst,relpos,relnumnum))
+			relctr += 1
+			j += 4
+			i += 1
 	
 		# write the outputs
 		fsense.write(composeSense(senseid, pos, sense))
@@ -55,23 +79,23 @@ def processFile(fname, pos):
 		for word in aword:
 			fdict.write( composeDict(wordid, word))
 			fdef.write( composeDef(wordid, defnum, senseid))
+			defctr += 1
 			wordid += 1
 			defnum += 1
 	
 		senseid += 1
 		if counter%1000 == 0:
 			print(f'{counter},', end='', flush=True)
-		#print(f'.', end='')
 	infile.close()
-	print( f'\n{fname} completed.\n')
+	print( f'\n{fname} completed.', flush=True)
 
 processFile(f'{dirin}/data.adv', 'r')
-processFile(f'{dirin}/data.verb','v')
-processFile(f'{dirin}/data.adj', 'a')
+#processFile(f'{dirin}/data.verb','v')
+#processFile(f'{dirin}/data.adj', 'a')
 #processFile('f{dirin}/data.noun', 'n')
 
-print(f'\ncomplete. {counter} rows. {senseid} sense records. {wordid} dict records.\n')
-	
+print(f'complete. rows:{counter} sense:{senseid-1} dict:{wordid-1} def:{defctr} rel:{relctr} totrel:{totrel}')
+
 fdict.close()
 fsense.close()
 fdef.close()
@@ -94,3 +118,30 @@ fdef.close()
 
 #00002137 03 n 02 abstraction 0 abstract_entity 0 010 @ 00001740 n 0000 + 00694095 v 0101 ~ 00023280 n 0000 ~ 00024444 n 0000 ~ 00031563 n 0000 ~ 00032220 n 0000 ~ 00033319 n 0000 ~ 00033914 n 0000 ~ 05818169 n 0000 ~ 08016141 n 0000 | a general concept formed by extracting common features from specific examples  
 
+#00001740 29 v 
+#04 
+#breathe 0 take_a_breath 0 respire 0 suspire 3 
+#021 
+#* 00005041 v 0000 
+#* 00004227 v 0000 
+#+ 03121972 a 0301 
+#+ 00832852 n 0303 
+#+ 04087945 n 0301 
+#+ 04257960 n 0105 
+#+ 00832852 n 0101 
+#^ 00004227 v 0103 
+#^ 00005041 v 0103 
+#$ 00002325 v 0000 
+#$ 00002573 v 0000 
+#~ 00002573 v 0000 
+#~ 00002724 v 0000 
+#~ 00002942 v 0000 
+#~ 00003826 v 0000 
+#~ 00004032 v 0000 
+#~ 00004227 v 0000 
+#~ 00005041 v 0000 
+#~ 00006697 v 0000 
+#~ 00007328 v 0000 
+#~ 00017024 v 0000 
+#02 + 02 00 + 08 00 
+#| draw air into, and expel out of, the lungs; "I can breathe better when the air is clean"; "The patient is respiring"  
