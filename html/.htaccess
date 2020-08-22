@@ -1,0 +1,11 @@
+# DO NOT REMOVE OR MODIFY. CLOUDLINUX ENV VARS CONFIGURATION BEGIN
+<IfModule Litespeed>
+</IfModule>
+# DO NOT REMOVE OR MODIFY. CLOUDLINUX ENV VARS CONFIGURATION END
+
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/voyccom/webprod/wordnet/wordnet"
+PassengerBaseURI "/"
+PassengerPython "/home/voyccom/virtualenv/webprod/wordnet/wordnet/3.8/bin/python3.8"
+PassengerAppLogFile "/home/voyccom/logs/user/wordnet.py.log"
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
