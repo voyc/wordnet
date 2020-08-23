@@ -1,4 +1,14 @@
 import re
+import json
+
+dirin = '../princeton/dict/'
+dirout = '../sql/gen/'
+dircfg = '../../'
+
+fconfig = open(f'{dircfg}/config.json', 'r')
+config = json.load(fconfig)
+print(config['default']['appname_long'])
+
 
 def composeSense(senseid, pos, sense):
 	return f"insert into wn.sense(id,pos,sense) values({senseid},'{pos}','{sense}');\n"
@@ -8,9 +18,6 @@ def composeDef(wordid, defnum, senseid):
 	return f"insert into wn.def(wordid,defnum,senseid) values({wordid},{defnum},{senseid});\n"
 def composeRel(relptr,relofst,relpos,relnumnum):
 	return f"insert into wn.rel(relptr,relofst,relpos,relnumnum) values('{relptr}','{relofst}','{relpos}','{relnumnum}');\n"
-
-dirin = '../princeton/dict/'
-dirout = '../sql/gen/'
 
 fdict = open(f'{dirout}/loaddict.sql', 'w')
 fsense = open(f'{dirout}/loadsense.sql', 'w')
