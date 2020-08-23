@@ -9,14 +9,26 @@ fconfig = open(f'{dircfg}/config.json', 'r')
 config = json.load(fconfig)
 print(config['default']['appname_long'])
 
-
 def composeSense(senseid, pos, sense):
 	return f"insert into wn.sense(id,pos,sense) values({senseid},'{pos}','{sense}');\n"
+
 def composeDict(wordid, word):
 	return f"insert into wn.dict(id,word) values({wordid},'{word}');\n"
-def composeDef(wordid, defnum, senseid):
-	return f"insert into wn.def(wordid,defnum,senseid) values({wordid},{defnum},{senseid});\n"
+
+def composeDef(wordid, defnum, senseid, ofst, pos):
+	pkey = f'{pos}{ofst}{str(defnum).zfill(2)}'
+	return f"insert into wn.def(wordid,defnum,senseid,pkey) values({wordid},{defnum},{senseid},'{pkey}');\n"
+
 def composeRel(relptr,relofst,relpos,relnumnum):
+	#num1 = int(relnumnum[0,2])
+	#num2 = int(relnumnum[2,4])
+	#if num1 <= 0:
+	#	princetonkey = f'{relpos}-{relofst}'
+	#	s = f'insert into wn.wordkey(princetonkey,sqlkey) values({princetonkey},{senseid});
+	#else:	
+	#	princetonkey = f'{relpos}-{relofst}-{num1}'
+	#	s = f'insert into wn.wordkey(princetonkey,sqlkey) values({princetonkey},{senseid});
+	#return s
 	return f"insert into wn.rel(relptr,relofst,relpos,relnumnum) values('{relptr}','{relofst}','{relpos}','{relnumnum}');\n"
 
 fdict = open(f'{dirout}/loaddict.sql', 'w')
@@ -85,7 +97,7 @@ def processFile(fname, pos):
 		defnum = 1
 		for word in aword:
 			fdict.write( composeDict(wordid, word))
-			fdef.write( composeDef(wordid, defnum, senseid))
+			fdef.write( composeDef(wordid, defnum, senseid, ofst, pos))
 			defctr += 1
 			wordid += 1
 			defnum += 1

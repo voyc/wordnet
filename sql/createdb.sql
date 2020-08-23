@@ -1,4 +1,3 @@
-
 create schema wn;
 
 create table wn.word (
@@ -17,7 +16,8 @@ create table wn.def (
 	id serial,
 	wordid int,
 	defnum int,
-	senseid int
+	senseid int,
+	pkey char(13)
 );
 
 create table wn.rel (
@@ -42,25 +42,14 @@ create table wn.ptr (
 create table wn.cat (
 );
 
-# list synsets
-select senseid, count(senseid) from wn.def 
-group by senseid
-having count(senseid) > 1;
-
-# list synonyms for a word
-select w.word, d.defnum
-from wn.word w, wn.def d
-where d.wordid = w.id
-and d.senseid in (
-	select s.id 
-	from wn.word w, wn.sense.s, wn.def d
-	where d.wordid = w.id and d.senseid = s.id
-	and w.word = 'speak' and d.defnum = 1
+create table wn.sensekey (
+	id serial,
+	princetonkey char(10), /* n-00045678 */
+	sqlkey int
 );
 
-# list adjectives
-select w.word, d.defnum, s.sense
-from wn.word w, wn.sense.s, wn.def d
-where d.wordid = w.id and d.senseid = s.id
-and s.pos = 'j';
-
+create table wn.wordkey (
+	id serial,
+	princetonkey char(13), /* v-00045678-01 */
+	sqlkey int
+);
