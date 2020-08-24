@@ -9,7 +9,7 @@ create table wn.sense (
 	id serial,
 	pos char(1),  /* code for part of speech */
 	cat char(2),  /* code for category */
-	sense varchar(100)
+	sense varchar(600)
 );
 
 create table wn.def (
@@ -22,9 +22,11 @@ create table wn.def (
 
 create table wn.rel (
 	id serial,
+	ptr varchar(2),
 	defid1 int,
-	ptr varchar(2),  /* code for relation pointer */
-	defid2 int
+	defid2 int,
+	pkey1 char(13),
+	pkey2 char(13)
 );
 
 create table wn.pos (
@@ -40,16 +42,4 @@ create table wn.ptr (
 );
 
 create table wn.cat (
-);
-
-create table wn.sensekey (
-	id serial,
-	princetonkey char(10), /* n-00045678 */
-	sqlkey int
-);
-
-create table wn.wordkey (
-	id serial,
-	princetonkey char(13), /* v-00045678-01 */
-	sqlkey int
 );

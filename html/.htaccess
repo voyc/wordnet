@@ -6,6 +6,6 @@
 # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
 PassengerAppRoot "/home/voyccom/webprod/wordnet/wordnet"
 PassengerBaseURI "/"
-PassengerPython "/home/voyccom/virtualenv/webprod/wordnet/wordnet/3.8/bin/python3.8"
+PassengerPython "/home/voyccom/virtualenv/webprod/wordnet/wordnet/3.7/bin/python3.7"
 PassengerAppLogFile "/home/voyccom/logs/user/wordnet.py.log"
 # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
