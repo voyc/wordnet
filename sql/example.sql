@@ -30,3 +30,11 @@ where r.ptr = '\;' and w1.word = 'speak'
 and w1.id = d1.wordid and d1.id = r.defid1
 and r.defid2 = d2.id and d2.wordid = w2.id;
 
+/* list indexes */
+select * from pg_indexes where schemaname = 'wn';
+
+/* during development */
+delete from wn.word;
+delete from wn.sense;
+delete from wn.def;
+delete from wn.rel;

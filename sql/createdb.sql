@@ -2,14 +2,14 @@ create schema wn;
 
 create table wn.word (
 	id serial,
-	word varchar(50)
-);
+	word varchar(100) unique  /* maxlen 71 */
+)
 
 create table wn.sense (
 	id serial,
 	pos char(1),  /* code for part of speech */
 	cat char(2),  /* code for category */
-	sense varchar(600)
+	sense varchar(600) /* maxlen 505 */
 );
 
 create table wn.def (
@@ -17,7 +17,8 @@ create table wn.def (
 	wordid int,
 	defnum int,
 	senseid int,
-	pkey char(13)
+	pkey char(13),
+	unique (wordid, defnum)
 );
 
 create table wn.rel (
@@ -30,16 +31,22 @@ create table wn.rel (
 );
 
 create table wn.pos (
-	id serial,
+	pos char(1) primary key,
 	num int,
-	pos varchar(10),
 	name varchar(10),
-	cd char(1),
+	alt varchar(10),
 	st varchar(10)
 );
 
 create table wn.ptr (
+	ptr char(2) primary key,
+	name varchar(30) unique,
+	reltype varchar(8),
+	pos varchar(4)
 );
 
 create table wn.cat (
+	cat char(2) primary key,
+	name varchar(20),
+	pos varchar(4)
 );

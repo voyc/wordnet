@@ -15,26 +15,6 @@ print(config['default']['appname_long'])
 gconn = psycopg2.connect(f"dbname={config['db']['name']} user={config['db']['user']} password={config['db']['password']} port={config['db']['port']}") 
 gconn.autocommit = True
 
-#def composeSense(senseid, pos, sense):
-#	return f"insert into wn.sense(id,pos,sense) values({senseid},'{pos}','{sense}');\n"
-#def composeWord(wordid, word):
-#	return f"insert into wn.word(id,word) values({wordid},'{word}');\n"
-#def composeDef(wordid, defnum, senseid, ofst, pos):
-#	pkey = f'{pos}{ofst}{str(defnum).zfill(2)}'
-#	return f"insert into wn.def(wordid,defnum,senseid,pkey) values({wordid},{defnum},{senseid},'{pkey}');\n"
-#
-#def composeRel(relptr,relofst,relpos,relnumnum):
-#	#num1 = int(relnumnum[0,2])
-#	#num2 = int(relnumnum[2,4])
-#	#if num1 <= 0:
-#	#	princetonkey = f'{relpos}-{relofst}'
-#	#	s = f'insert into wn.wordkey(princetonkey,sqlkey) values({princetonkey},{senseid});
-#	#else:	
-#	#	princetonkey = f'{relpos}-{relofst}-{num1}'
-#	#	s = f'insert into wn.wordkey(princetonkey,sqlkey) values({princetonkey},{senseid});
-#	#return s
-#	return f"insert into wn.rel(relptr,relofst,relpos,relnumnum) values('{relptr}','{relofst}','{relpos}','{relnumnum}');\n"
-
 def  insertSense(pos, cat, sense):
 	# insert one sense record
 	global gconn, gcsense
@@ -76,34 +56,33 @@ def insertWord(word):
 	scur.close()
 	return (wordid,defnum)
 
-def insertDef(wordid,defnum,senseid,pos,ofst):
+def insertDef(wordid,defnum,senseid,pwkey):
 	# insert one def record
 	global gconn,gcdef
-	pkey = pos+ofst+str(defnum).zfill(2) 
 	sql = 'insert into wn.def(wordid,defnum,senseid,pkey)'
 	sql += ' values(%s,%s,%s,%s) returning id'
 	cur = gconn.cursor()
-	cur.execute(sql,(wordid,defnum,senseid,pkey,))
+	cur.execute(sql,(wordid,defnum,senseid,pwkey,))
 	defid = cur.fetchone()
 	cur.close()
 	gcdef += 1
 	return defid
 
-# output files
-#fword = open(f'{dirout}/loadword.sql', 'w')
-#fsense = open(f'{dirout}/loadsense.sql', 'w')
-#fdef = open(f'{dirout}/loaddef.sql', 'w')
-#frel = open(f'{dirout}/loadrel.sql', 'w')
+def insertRel(relptr,pkey1,pkey2):
+	# insert one rel record
+	global gconn,gcrel
+	sql = 'insert into wn.rel(ptr,pkey1,pkey2)'
+	sql += ' values(%s,%s,%s) returning id'
+	cur = gconn.cursor()
+	sql = cur.execute(sql,(relptr,pkey1,pkey2))
+	relid = cur.fetchone()
+	cur.close()
+	gcrel += 1
+	return relid
 
-# global counters and db id's
+# global counters
 counter = 0
 runaway = 130000 #117941
-#gwordid = 1
-#senseid = 1
-#defctr = 0
-#relctr = 0
-#totrel = 0
-
 gcword = 0
 gcdef = 0
 gcsense = 0
@@ -111,11 +90,11 @@ gcrel = 0
 
 # input files
 inputfiles = [
-	'data.test',  #r 
-#	'data.adv',  #r 
-#	'data.verb', #v 
-#	'data.adj',  #a,s
-#	'data.noun', #n
+#	'data.test',  #r 
+	'data.adv',  #r 
+	'data.verb', #v 
+	'data.adj',  #a,s
+	'data.noun', #n
 ]
 
 for fname in inputfiles:
@@ -151,47 +130,30 @@ for fname in inputfiles:
 			i += 1
 
 		# insert sense, word, def 
-		#fsense.write(composeSense(senseid, pos, sense))
 		senseid = insertSense(pos,cat,sense)
 		for word in aword:
-			#fword.write( composeWord(wordid, word))
 			(wordid,defnum) = insertWord(word)
-
-			#fdef.write( composeDef(wordid, defnum, senseid, ofst, pos))
-			insertDef(wordid,defnum,senseid,pos,ofst)
+			pwkey = pos+ofst+str(defnum).zfill(2) 
+			defid = insertDef(wordid,defnum,senseid,pwkey)
 	
 		# parse and insert relations
-	#	j += inc
-	#	numrel = int(a[j])
-	#	totrel += numrel
-	#	j += 1
-	#	i = 1
-	#	while i <= numrel:
-	#		relptr = a[j+0]
-	#		relofst = a[j+1]
-	#		relpos = a[j+2]
-	#		relnumnum = a[j+3]
-	#		print(relnumnum)
-	#		print(relnumnum[0:2])
-	#		num1 = int(relnumnum[0:2])
-	#		num2 = int(relnumnum[2:4])
-	#		pkey1 = f'{pos}{ofst}{num1}'
-	#		pkey2 = f'{relpos}{relofst}{num2}'
-	#		#if num1 <= 0:
-	#		#	princetonkey = f'{relpos}-{relofst}'
-	#		#	s = f'insert into wn.wordkey(princetonkey,sqlkey) values({princetonkey},{senseid});
-	#		#else:	
-	#		#	princetonkey = f'{relpos}-{relofst}-{num1}'
-	#		#	s = f'insert into wn.wordkey(princetonkey,sqlkey) values({princetonkey},{senseid});
-	#		#return s
-	#		#f"insert into wn.rel(ptr,defid1,defid2,pkey1,pkey2)"
-	#		sql = f"insert into wn.rel(relptr,relofst,relpos,relnumnum) values('{relptr}','{relofst}','{relpos}','{relnumnum}');\n"
-	#		frel.write(composeRel(relptr,relofst,relpos,relnumnum))
-	#		relctr += 1
-	#		j += 4
-	#		i += 1
+		j += inc
+		numrel = int(a[j])
+		j += 1
+		i = 1
+		while i <= numrel:
+			relptr = a[j+0]
+			relofst = a[j+1]
+			relpos = a[j+2]
+			relnumnum = a[j+3]
+			num1 = relnumnum[0:2]
+			num2 = relnumnum[2:4]
+			pkey1 = pos+ofst+num1
+			pkey2 = relpos+relofst+num2
+			insertRel(relptr,pkey1,pkey2)
+			j += 4
+			i += 1
 	
-		#senseid += 1
 		if counter%1000 == 0:
 			print(f'{counter},', end='', flush=True)
 	infile.close()
@@ -199,22 +161,6 @@ for fname in inputfiles:
 
 print(f'complete. rows:{counter} sense:{gcsense} word:{gcword} def:{gcdef} rel:{gcrel}')
 
-#fword.close()
-#fsense.close()
-#fdef.close()
-#frel.close()
-
-
-#infile = open('{dirin}dbfiles/noun.Tops', 'r')
-# mat = re.match('{ (.*?), ((.*?)) }', '')
-#mat = re.match('{ (.*?) \((.*?)\) }', line)
-#print( mat)
-#if mat:
-#	print line
-#	fword.write(mat.group(1))
-#	fword.write('\n')
-#	fsense.write(mat.group(2))
-#	fsense.write('\n')
 
 # { entity, (that which is perceived or known or inferred to have its own distinct existence (living or nonliving)) }
 
