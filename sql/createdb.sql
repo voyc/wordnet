@@ -30,23 +30,28 @@ create table wn.rel (
 	pkey2 char(13)
 );
 
+drop table wn.pos;
 create table wn.pos (
 	pos char(1) primary key,
 	num int,
-	name varchar(10),
-	alt varchar(10),
-	st varchar(10)
+	name varchar(4),
+	lname varchar(10),
+	alt varchar(4),
+	st varchar(4)
 );
 
+drop table wn.ptr;
 create table wn.ptr (
 	ptr char(2) primary key,
 	name varchar(30) unique,
-	reltype varchar(8),
+	field varchar(8), /* semantic, lexical */
 	pos varchar(4)
 );
 
+drop table wn.cat;
 create table wn.cat (
 	cat char(2) primary key,
+	pos char(1),
 	name varchar(20),
-	pos varchar(4)
+	lname varchar(70)
 );
