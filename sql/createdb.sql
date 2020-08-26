@@ -62,6 +62,7 @@ drop table wn.ptr;
 create table wn.ptr (
 	ptr char(2) primary key,
 	name varchar(30) unique,
+	reflex char(2),
 	field varchar(8), /* semantic, lexical */
 	pos varchar(4)
 );
