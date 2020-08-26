@@ -38,3 +38,4 @@ delete from wn.word;
 delete from wn.sense;
 delete from wn.def;
 delete from wn.rel;
+delete from wn.frame;
