@@ -60,13 +60,13 @@ def insertWord(word):
 	scur.close()
 	return (wordid,defnum)
 
-def insertDef(wordid,defnum,senseid,pkey):
+def insertDef(wordid,defnum,senseid,pkey,satellite):
 	# insert one def record
 	global gconn,gcdef
-	sql = 'insert into wn.def(wordid,defnum,senseid,pkey)'
-	sql += ' values(%s,%s,%s,%s) returning id'
+	sql = 'insert into wn.def(wordid,defnum,senseid,pkey,satellite)'
+	sql += ' values(%s,%s,%s,%s,%s) returning id'
 	cur = gconn.cursor()
-	cur.execute(sql,(wordid,defnum,senseid,pkey,))
+	cur.execute(sql,(wordid,defnum,senseid,pkey,satellite))
 	defid = cur.fetchone()
 	cur.close()
 	gcdef += 1
@@ -96,9 +96,6 @@ def insertFrame(defid,framenum,pkey):
 	gcframe += 1
 	return frameid
 
-def insertSatellite():
-	return satid
-
 # global counters
 counter = 0
 runaway = 130000 #117941
@@ -110,11 +107,11 @@ gcframe = 0
 
 # input files
 inputfiles = [
-	'data.test', 
-#	'data.adv',  #r 
-#	'data.verb', #v 
-#	'data.adj',  #a,s
-#	'data.noun', #n
+#	'data.test', 
+	'data.adv',  #r 
+	'data.verb', #v 
+	'data.adj',  #a,s
+	'data.noun', #n
 ]
 
 for fname in inputfiles:
@@ -149,6 +146,13 @@ for fname in inputfiles:
 			j += 2
 			i += 1
 
+		# fix pos for adjective satellite
+		if pos == 's':
+			pos = 'a'
+			satellite = 's'
+		else:
+			satellite = ''
+
 		# insert sense, word, def 
 		senseid = insertSense(pos,cat,sense)
 		symnum = 0
@@ -156,7 +160,7 @@ for fname in inputfiles:
 			(wordid,defnum) = insertWord(word)
 			symnum += 1
 			pkey = pos+ofst+str(symnum).zfill(2) 
-			defid = insertDef(wordid,defnum,senseid,pkey)
+			defid = insertDef(wordid,defnum,senseid,pkey,satellite)
 	
 		# parse and insert rel
 		numrel = int(a[j])
@@ -167,8 +171,8 @@ for fname in inputfiles:
 			relofst = a[j+1]
 			relpos = a[j+2]
 			relnumnum = a[j+3]
-			num1 = relnumnum[0:2]
-			num2 = relnumnum[2:4]
+			num1 = str(int(relnumnum[0:2], base=16)).zfill(2)
+			num2 = str(int(relnumnum[2:4], base=16)).zfill(2)
 			pkey1 = pos+ofst+num1
 			pkey2 = relpos+relofst+num2
 			insertRel(relptr,pkey1,pkey2)
@@ -188,8 +192,6 @@ for fname in inputfiles:
 				insertFrame(defid,framenum,pkey)
 				j += 3
 				i += 1 
-
-		# adjective clusters, satellites
 
 		if counter%1000 == 0:
 			print(f'{counter},', end='', flush=True)

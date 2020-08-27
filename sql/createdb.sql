@@ -21,6 +21,7 @@ create table wn.def (
 	defnum int,
 	senseid int,
 	pkey char(11),
+	satellite char(1),
 	unique (wordid, defnum)
 );
 create index def_pkey_ndx on wn.def(pkey); 
@@ -77,45 +78,31 @@ create table wn.cat (
 
 /* views */
 
-drop view lexrel;
-create view lexrel ( 
-	name1,
-	ptr,
-	name2
-) as
-select w1.word, r.ptr, w2.word 
-from wn.rel r, wn.def d1, wn.def d2, wn.word w1, wn.word w2
-where d1.wordid = w1.id and r.defid1 = d1.id
-and d2.wordid = w2.id and r.defid2 = d2.id
-limit 10;
-
 drop view wordsense;
-create view wordsense ( 
-	word,
-	defnum,
-	sense
-) as
-select w.word, d.defnum, s.sense
+create view wordsense (word,defnum,worddef,sense) as
+select w.word, d.defnum, w.word || d.defnum, s.sense
 from wn.word w, wn.sense s, wn.def d
 where w.id = d.wordid and s.id = d.senseid;
 
-select w.word
-from w.word
-where d.senseid= 
-select id from 
+drop view synset;
+create view synset (senseid, syncount, pos, cat, words, sense) as
+select d.senseid, count(d.senseid), min(s.pos), min(s.cat), array_agg(w.word), min(s.sense) 
+from wn.def d, wn.word w, wn.sense s
+where w.id = d.wordid
+and s.id = d.senseid
+group by d.senseid;
 
+drop view relsimple;
+create view lexrel (name1,ptr,name2) as
+select substring(w1.word,1,20), r.ptr, substring(w2.word,1,20)
+from wn.rel r, wn.def d1, wn.def d2, wn.word w1, wn.word w2
+where d1.wordid = w1.id and r.defid1 = d1.id
+and d2.wordid = w2.id and r.defid2 = d2.id;
 
-synonyms for a word, defnum
-search by wordid or word, defnum
-
-select defnum, word
-from wordsense
-order by defnum desc
-limit 100;
-
-select max(defnum), max(word)
-from wordsense
-group by word
-order by max(defnum) desc
-limit 100;
+drop view relcomplete;
+create view relcomplete (id,ptr,defid1,defid2,pkey1,pkey2,field1,field2) as
+select r.id, r.ptr, r.defid1, r.defid2, r.pkey1, r.pkey2, 
+case when substring(r.pkey1,10,12) = '00' then 'semantic' else 'lexical' end,
+case when substring(r.pkey2,10,12) = '00' then 'semantic' else 'lexical' end
+from wn.rel r;
 

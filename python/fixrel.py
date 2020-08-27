@@ -1,3 +1,8 @@
+# x change s to a in wn.def pkey
+# x maybe in pos
+# x synnum are hex, affects 185 records
+
+
 # fixrel.py
 # set defid1 and defid2 in wn.rel
 
@@ -16,8 +21,8 @@ gconn.autocommit = True
 
 def fixpkey(pkeyin):
 	#a0000174001
-	if pkeyin[10:12] == '00':
-		pkeyout = pkeyin[0:10]
+	if pkeyin[9:11] == '00':
+		pkeyout = pkeyin[0:9] + '01' 
 	else:
 		pkeyout = pkeyin
 	return pkeyout
@@ -27,7 +32,10 @@ def lookup(pkey):
 	cur = gconn.cursor()
 	sql = 'select id from wn.def where pkey = %s'
 	cur.execute(sql, (pkey,))
-	defid = cur.fetchone()
+	if cur.rowcount >= 1:
+		defid = cur.fetchone()[0]
+	else:
+		defid = 0
 	cur.close()
 	return defid
 
@@ -51,11 +59,11 @@ curin = gconn.cursor()
 curin.execute(sqlin)
 for row in curin:
 	counter += 1
-	if counter > runaway:
-		break;
+	#if counter > runaway:
+	#	break;
 	pkey = row[0]
-	pkey = fixpkey(pkey) 
-	defid = lookup(pkey)
+	pkeyw = fixpkey(pkey) 
+	defid = lookup(pkeyw)
 	update(1,defid,pkey)
 	if counter%1000 == 0:
 		print(f'{counter},', end='', flush=True)
@@ -69,11 +77,11 @@ curin = gconn.cursor()
 curin.execute(sqlin)
 for row in curin:
 	counter += 1
-	if counter > runaway:
-		break;
+	#if counter > runaway:
+	#	break;
 	pkey = row[0]
-	pkey = fixpkey(pkey) 
-	defid = lookup(pkey)
+	pkeyw = fixpkey(pkey) 
+	defid = lookup(pkeyw)
 	update(2,defid,pkey)
 	if counter%1000 == 0:
 		print(f'{counter},', end='', flush=True)

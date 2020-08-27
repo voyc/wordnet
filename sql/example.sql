@@ -1,20 +1,19 @@
 psql -d voyccom_wn -u voyccom_jhagstrand
 
-
-/* list synsets */
-select senseid, count(senseid) from wn.def 
-group by senseid
-having count(senseid) > 1;
+/* list synsets by size */
+select syncount, words from synset
+where syncount > 1
+order by syncount desc;
 
 /* list synonyms for a word */
 select w.word, d.defnum
 from wn.word w, wn.def d
 where d.wordid = w.id
 and d.senseid in (
-	select s.id 
-	from wn.word w, wn.sense.s, wn.def d
-	where d.wordid = w.id and d.senseid = s.id
-	and w.word = 'speak' and d.defnum = 1
+        select s.id
+        from wn.word w, wn.sense s, wn.def d
+        where d.wordid = w.id and d.senseid = s.id
+        and w.word = 'speak' and d.defnum = 1
 );
 
 /* list adjectives */
@@ -23,19 +22,17 @@ from wn.word w, wn.sense.s, wn.def d
 where d.wordid = w.id and d.senseid = s.id
 and s.pos = 'j';
 
-/* display lex rels */
-select r.ptr, w2.word
-from wn.rel r, wn.def d1, wn.word w1, wn.def d2, wn.word w2 
-where r.ptr = '\;' and w1.word = 'speak' 
-and w1.id = d1.wordid and d1.id = r.defid1
-and r.defid2 = d2.id and d2.wordid = w2.id;
-
 /* list indexes */
 select * from pg_indexes where schemaname = 'wn';
 
-/* during development */
-delete from wn.word;
-delete from wn.sense;
-delete from wn.def;
-delete from wn.rel;
-delete from wn.frame;
+/* list senses for each word */
+select word, defnum, sense from wordsense;
+
+/* list relations */
+select name1, ptr, name2 from lexrel;
+
+/* show counts by ptr and field */
+select r.ptr, min(p.name), r.field1, count(*) 
+from relcomplete r, wn.ptr p
+where p.ptr = r.ptr
+group by r.ptr, r.field1;
