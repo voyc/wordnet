@@ -79,8 +79,8 @@ create table wn.cat (
 /* views */
 
 drop view wordsense;
-create view wordsense (word,defnum,worddef,sense) as
-select w.word, d.defnum, w.word || d.defnum, s.sense
+create view wordsense (word,defnum,worddef,sense,wordid,senseid,defid) as
+select w.word, d.defnum, w.word || d.defnum, s.sense, w.id, s.id, d.id
 from wn.word w, wn.sense s, wn.def d
 where w.id = d.wordid and s.id = d.senseid;
 
